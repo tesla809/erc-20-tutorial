@@ -42,7 +42,9 @@ Examples of fungible goods are Ether, fiat currencies like the US Dollar or Euro
 
 #### What are token standards
 
-Simply put, a token standard is **a common API** for tokens within smart contracts. Token standards allow developers to predict how to interact with other tokens. Since smart contracts can be programmed in any way, **standards** need to be created so that tokens interoperate with each other and other contracts. Without standards, there would be as many implementations as there are tokens. Building any composable application that leverages other smart contracts would be difficult and time-consuming.
+Simply put, a token standard is **a common API** for tokens within smart contracts.
+
+Token standards allow developers to predict how to interact with other tokens. Since smart contracts can be programmed in any way, **standards** need to be created so that tokens interoperate with each other and other contracts. Without standards, there would be as many implementations as there are tokens. Building any composable application that leverages other smart contracts would be difficult and time-consuming.
 
 Token standards have a minimum required common set of methods and events. Their naming must be the same as the standard. However, their implementation or underlying logic is open to the developer. Once this minimum set of methods and events have been satisfied, the token can have additional methods and interfaces for added functionality.
 
