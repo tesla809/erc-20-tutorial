@@ -36,11 +36,7 @@ Since token contracts are programs, you can create any sort of logic based on th
 
 An ERC20 token is used to represent fungible goods. [Fungible goods](https://en.wikipedia.org/wiki/Fungibility) are equivalent and interchangeable. Therefore, each token is exactly the same, with no token having any special behavior attached to it.
 
-Examples of fungible goods are Ether, fiat currencies like the US Dollar or Euro, and voting rights.
-
-ERC-20 tokens are useful for assets like currencies, voting rights, points in a game, and more.
-
-In general, with fungible assets, you care about how much of it you have.
+Examples of fungible goods are Ether, fiat currencies like the US Dollar or Euro, and voting rights. ERC-20 tokens are useful for assets like currencies, voting rights, points in a game, and more. In general, with fungible assets, you care about how much of it you have.
 
 ### ERC-20 Standard
 
@@ -50,21 +46,15 @@ Since smart contracts can be programmed in any way, **standards** need to be cre
 
 Without standards, there would be as many implementations as there are tokens. Building any composable application that leverages other smart contracts would be difficult and time-consuming.
 
-Simply put, a token standard is a common API for tokens within smart contracts.
+Simply put, a token standard is **a common API** for tokens within smart contracts. Token standards allow developers to predict how to interact with other tokens.
 
-Token standards allow developers to predict how to interact with other tokens.
-
-Token standards have a minimum required common set of methods and events. Their naming must be the same as the standard. However, their implementation or underlying logic is open to the developer.
-
-Once this minimum set of methods and events have been satisfied, the token can have additional methods and interfaces for added functionality.
+Token standards have a minimum required common set of methods and events. Their naming must be the same as the standard. However, their implementation or underlying logic is open to the developer. Once this minimum set of methods and events have been satisfied, the token can have additional methods and interfaces for added functionality.
 
 Events are used to issue alerts regarding actions that occured on the blockchain. Events can be used to trigger UI updates on app front ends, testing, logging and more.
 
 ### ERC-20 Standard Overview
 
-The ERC-20 standard defines a common list of rules that all fungible Ethereum tokens should adhere to.
-
-Without adherance, developers will find it hard for others to use their token, reducing its utility and possible network effects.
+The ERC-20 standard defines a common list of rules that all fungible Ethereum tokens should adhere to. Without adherance, developers will find it hard for others to use their token, reducing its utility and possible network effects.
 
 #### ERC-20 API
 
