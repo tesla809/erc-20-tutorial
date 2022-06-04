@@ -2,6 +2,30 @@
 
 A quick ERC-20 tutorial with testing, fuzzing and more.
 
+## Prerequsites
+
+To complete this module, it is assumed that you know **at least the basics** of:
+
+- Programming
+- JavaScript
+- React
+- NodeJS
+- Command-line terminal
+
+For those new to programming, check out [ConsenSys Academy's Basic Training](https://consensys.net/blog/developers/introducing-basic-training-a-free-consensys-academy-course-for-software-engineering-fundamentals/), a free course to guide new developers. You can also join our [TBD - Truffle Unleashed Discord Channel]() to chat with other current and aspiring devs on your journey.
+
+You can also message [@tesla809](https://twitter.com/Tesla809) on Twitter if you have a programming question.
+
+### Note on Solidity
+
+Solidity is a programming scripting language to create smart contracts on Ethereum Virtual Machine (EVM) based blockchains. Ethereum was the first programmable blockchain that allows any arbitrary logic. Bitcoin has scripting capabilities, but it is severely limited.
+
+Familiarity with Solidity is not required but is nice to have. Along the way, we will describe the basics to complete the module. Via hands-on experience, you will be able to pick up the language. If you are stuck, there are resources online to help, like the [official Solidity documentation](https://docs.soliditylang.org/en/v0.8.14/) and [solidity-by-example.org](https://solidity-by-example.org/).
+
+Later, we plan to create stand-alone bite-sized Solidity examples, similar to [Rust by Example](https://doc.rust-lang.org/rust-by-example/index.html).
+
+If you would like a [basic overview of the Ethereum Stack checkout this article](https://ethereum.org/en/developers/docs/ethereum-stack/). Additionally, you can [explore the architecture of a web3 application](https://www.preethikasireddy.com/post/the-architecture-of-a-web-3-0-application).
+
 ## Background Overview
 
 ### What is a Token
@@ -13,6 +37,10 @@ Tokens can represent anything, like time, money, services, virtual pets, stock, 
 ### Token Contracts
 
 Under the hood, a token is just a smart contract. In fact, most things built on Ethereum are smart contracts, which are programmable snippets of code that run on the Ethereum blockchain.
+
+#### Contracts
+
+[Contracts](https://docs.soliditylang.org/en/v0.8.13/contracts.html) work just like classes in other programming languages. According to the [official Solidity documentation](https://docs.soliditylang.org/en/v0.8.13/introduction-to-smart-contracts.html), a contract is "a collection of code (its functions) and data (its state) that resides at a specific address on the Ethereum blockchain."
 
 #### Token Methods
 
@@ -54,7 +82,20 @@ Events are used to issue alerts regarding actions that occured on the blockchain
 
 The ERC-20 standard defines a common list of rules that all fungible Ethereum tokens should adhere to. Without adherance, developers will find it hard for others to use their token, reducing its utility and possible network effects.
 
-#### ERC-20 API
+The purpose of the ERC-20 standard is to make any token implementation interoperable, reusable and composible across any application, like wallets, decentralized exchanges, lending markets and beyond. This common standard creates the building blocks for Decentralized Finance (DeFi).
+
+#### The ERC-20 API
+
+Below are all the required methods and events needed to implement the ERC-20 standard. Again, the ERC-20 standard is just a **common API for fungible assets**.
+
+Let's go through each part of this code and cover:
+
+- pragma
+- interfaces
+- functions
+- events
+
+Later, when we implement our first pass at the contract, we will cover the basics of Solidity's language primitives.
 
 ```solidity
 pragma solidity ^0.6.0;
@@ -75,6 +116,35 @@ interface IERC20 {
 
 }
 ```
+
+#### Pragma
+
+`pragma solidity ^0.6.0;`
+
+Since what is executed on the Ethereum Virtual Machine (EVM) is EVM bytecode, any language that compiles into it can be used to write smart contracts. Another popular language is [Vyper](https://vyper.readthedocs.io/en/stable/), a Python-inspired smart contract scripting language for the EVM. Check this [quick breakdown of both](https://ethereum.org/en/developers/docs/smart-contracts/languages/) if you are curious. Hence, because of various languages, in our pragma, we specify the language.
+
+Like all programming languages, Solidity has updates. The `pragma` states which version of the Solidity is being used. The pragma determines which compiler to use to [compile the code to EVM Bytecode](https://ethereum.org/en/developers/docs/smart-contracts/compiling/). This is important because Solidity becomes safer and easier to use as the language evolves. The version of the language is indicated by the [Semantic versioning](https://www.geeksforgeeks.org/introduction-semantic-versioning/) (SemVer) `^0.6.0;`. The `^` means "compatible with." Depending on what symbol you pass in, you can indicate which compiler version to use. See this [simple SemVer cheat sheet](https://devhints.io/semver).
+
+#### Interface Overview
+
+Think of interfaces like a light switch. Light switches can come in different styles and operate in different ways. However, your only concern is that the lights can be turned on or off. You can think of the light switch as an interface or API for an action, toggling between lights on or off.
+
+In Object-Oriented Programming, [interfaces](<https://en.wikipedia.org/wiki/Interface_(computing)#In_object-oriented_languages>) are popular patterns as well. They split a piece of code's expected functionality from its implementation. Or simply put, interfaces separate the definition of a function from the actual behavior of the said function. As a result, they can help create the APIs that form our token standards.
+
+In Solidity specifically, an Interface is a smart contract that lists a series of functions and events without implementation. Interface contracts do not focus on HOW a contract can do something, only WHAT they can do. Think of smart contract interfaces as a skeleton or backbone. It defines the contract's functionalities and how to trigger them. But not HOW it occurs. HOW the function is implemented is customizable and up to the developer.
+
+The main idea behind interfaces is to provide a re-usable and customizable approach for creating smart contracts. Interface contracts give the structure to create a token standard that serves as the API surface for your contracts.
+
+Just like an API, a smart contract based on a specific interface makes it easy to understand:
+
+- the contract's functionality
+- how to interact with the contract.
+
+This allows developers and other contracts a predictable way to interact with any smart contract implementing a specific interface.
+
+By convension, Interface contracts are in named in the form `ITokenStandard`, with `I` and appended by the standard. The ERC-20 standard is thus: `interface IERC20 {...}`. Convention means that it's the HIGHLY suggested manner to do something. However, it is not enforced by the language's compiler.
+
+How are interfaces implemented? Like other programming languages, the implementation class (contract) will inherit from the interface class (contract). However, stay tuned.
 
 #### Getters
 
@@ -127,3 +197,5 @@ npx create-react-app client
 ```
 
 ## Basic ERC-20
+
+For context, here is an [overview of an anatomy of a smart sontract](https://ethereum.org/en/developers/docs/smart-contracts/anatomy/).
