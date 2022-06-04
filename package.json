@@ -1,0 +1,9 @@
+{
+  "name": "erc-20-tutorial",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:tesla809/erc-20-tutorial.git",
+  "author": "Anthony Albertorio <anthony.albertorio@gmail.com>",
+  "license": "MIT",
+  "dependencies": {}
+}
