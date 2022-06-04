@@ -82,7 +82,7 @@ Events are used to issue alerts regarding actions that occured on the blockchain
 
 The ERC-20 standard defines a common list of rules that all fungible Ethereum tokens should adhere to. Without adherance, developers will find it hard for others to use their token, reducing its utility and possible network effects.
 
-The purpose of the ERC-20 standard is to make any token implementation interoperable, reusable and composible across any application, like wallets, decentralized exchanges, lending markets and beyond. This common standard creates the building blocks for Decentralized Finance (DeFi).
+The purpose of the ERC-20 standard is to make any token implementation interoperable, reusable and composable across any application, like wallets, decentralized exchanges, lending markets and beyond. This common standard creates the building blocks for Decentralized Finance (DeFi).
 
 #### The ERC-20 API
 
@@ -90,40 +90,152 @@ Below are all the required methods and events needed to implement the ERC-20 sta
 
 Let's go through each part of this code and cover:
 
+- SPDX-License-Identifier
+- NatSpec
 - pragma
 - interfaces
 - functions
 - events
 
-Later, when we implement our first pass at the contract, we will cover the basics of Solidity's language primitives.
+Later, when we implement our first pass at the contract, we will cover the basics of Solidity's language primitives. This may be counter intuitive at first, but starting with the standard allows us to take a big picture hands-on view.
 
 ```solidity
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
+// OpenZeppelin Contracts (last updated v4.6.0) (token/ERC20/IERC20.sol)
 
+pragma solidity ^0.8.0;
+
+/**
+ * @dev Interface of the ERC20 standard as defined in the EIP.
+ */
 interface IERC20 {
-
-    function totalSupply() external view returns (uint256);
-    function balanceOf(address account) external view returns (uint256);
-    function allowance(address owner, address spender) external view returns (uint256);
-
-    function transfer(address recipient, uint256 amount) external returns (bool);
-    function approve(address spender, uint256 amount) external returns (bool);
-    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
-
-
+    /**
+     * @dev Emitted when `value` tokens are moved from one account (`from`) to
+     * another (`to`).
+     *
+     * Note that `value` may be zero.
+     */
     event Transfer(address indexed from, address indexed to, uint256 value);
+
+    /**
+     * @dev Emitted when the allowance of a `spender` for an `owner` is set by
+     * a call to {approve}. `value` is the new allowance.
+     */
     event Approval(address indexed owner, address indexed spender, uint256 value);
 
+    /**
+     * @dev Returns the amount of tokens in existence.
+     */
+    function totalSupply() external view returns (uint256);
+
+    /**
+     * @dev Returns the amount of tokens owned by `account`.
+     */
+    function balanceOf(address account) external view returns (uint256);
+
+    /**
+     * @dev Moves `amount` tokens from the caller's account to `to`.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * Emits a {Transfer} event.
+     */
+    function transfer(address to, uint256 amount) external returns (bool);
+
+    /**
+     * @dev Returns the remaining number of tokens that `spender` will be
+     * allowed to spend on behalf of `owner` through {transferFrom}. This is
+     * zero by default.
+     *
+     * This value changes when {approve} or {transferFrom} are called.
+     */
+    function allowance(address owner, address spender) external view returns (uint256);
+
+    /**
+     * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * IMPORTANT: Beware that changing an allowance with this method brings the risk
+     * that someone may use both the old and the new allowance by unfortunate
+     * transaction ordering. One possible solution to mitigate this race
+     * condition is to first reduce the spender's allowance to 0 and set the
+     * desired value afterwards:
+     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+     *
+     * Emits an {Approval} event.
+     */
+    function approve(address spender, uint256 amount) external returns (bool);
+
+    /**
+     * @dev Moves `amount` tokens from `from` to `to` using the
+     * allowance mechanism. `amount` is then deducted from the caller's
+     * allowance.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * Emits a {Transfer} event.
+     */
+    function transferFrom(
+        address from,
+        address to,
+        uint256 amount
+    ) external returns (bool);
 }
 ```
 
+#### Comments
+
+Programming languages have the abilty to allow developers to leave comments. Solidity follows the JavaScript (ECMAScript) style of making comments with:
+
+- `//` single line comments
+- `/* */` multi line comments
+
+#### SPDX
+
+Solidity files should have a license identifier. Software licenses are essential because, depending on the type, they can provide different limitations, liability protection, or requirements for usage. Usually, smart contracts use the [MIT License](https://choosealicense.com/licenses/mit/), which limits personal liability while giving users expansive freedoms.
+
+If you need a different license, explain it in the comments. In addition, you can find a [developer's guide to licenses here](https://github.com/readme/guides/open-source-licensing) and, for the more curious, the entire [list of SPDX licenses here](https://spdx.org/licenses/). Reasons for choosing a different license range from business considerations to wishing to retain all derivative code as open-source even if a business builds on top of it.
+
+[SPDX](https://spdx.dev/) is an open standard for communicating software licenses, copywrites, security references, etc.
+
+#### OpenZeppelin Reference
+
+[OpenZeppelin](https://www.openzeppelin.com/) provides security products to build, automate, and operate decentralized applications. OpenZeppelin's Solidity smart contracts are a library of modular, reusable, secure smart contracts for EVM-based networks. Used by the Ethereum Foundation and the world's top protocols, they are the industry standard and provide a secure base for developing your smart contracts.
+
+Later, we'll see how we import their contracts to provide a secure base for our smart contracts.
+
+#### NatSpec
+
+The multiline comments with symbols like `@dev` are part of Solidity's [NatSpec](https://docs.soliditylang.org/en/develop/natspec-format.html) format. NatSpec is used to produce documentation from the source code. JavaScript Developers may recognize its similarity to [JSDoc](https://jsdoc.app/about-getting-started.html). Using NatSpec to document your code is [considered a security best practice](https://ethereum.org/en/developers/tutorials/smart-contract-security-guidelines/#documentation-and-specifications).
+
+Natspec is useful for developers, 3rd party tooling, and end-users. For developers, it helps them and the future you understand your code. Custom annotations used by 3rd party tools can be added. NatSpec messages may even be shown to the end-user at the time that they will interact with the contract, like signing a transaction.
+
+There are other symbols like:
+
+- @title - A title that should describe the contract/interface
+
+- @author - The name of the author
+
+- @notice - Explain to an end user what this does
+
+- @dev - Explain to a developer any extra details
+
+- @param - Documents a parameter just like in Doxygen (must be followed by parameter name)
+
+- @return - Documents the return variables of a contract’s function
+
+- @custom: - Custom tag, semantics is application-defined
+
 #### Pragma
 
-`pragma solidity ^0.6.0;`
+`pragma solidity >=0.6.0 <0.8.0;`
 
 Since what is executed on the Ethereum Virtual Machine (EVM) is EVM bytecode, any language that compiles into it can be used to write smart contracts. Another popular language is [Vyper](https://vyper.readthedocs.io/en/stable/), a Python-inspired smart contract scripting language for the EVM. Check this [quick breakdown of both](https://ethereum.org/en/developers/docs/smart-contracts/languages/) if you are curious. Hence, because of various languages, in our pragma, we specify the language.
 
-Like all programming languages, Solidity has updates. The `pragma` states which version of the Solidity is being used. The pragma determines which compiler to use to [compile the code to EVM Bytecode](https://ethereum.org/en/developers/docs/smart-contracts/compiling/). This is important because Solidity becomes safer and easier to use as the language evolves. The version of the language is indicated by the [Semantic versioning](https://www.geeksforgeeks.org/introduction-semantic-versioning/) (SemVer) `^0.6.0;`. The `^` means "compatible with." Depending on what symbol you pass in, you can indicate which compiler version to use. See this [simple SemVer cheat sheet](https://devhints.io/semver).
+Like all programming languages, Solidity has updates. The `pragma` states which version of the Solidity is being used. The pragma determines which compiler to use to [compile the code to EVM Bytecode](https://ethereum.org/en/developers/docs/smart-contracts/compiling/). This is important because Solidity becomes safer and easier to use as the language evolves. The version of the language is indicated by the [Semantic versioning](https://www.geeksforgeeks.org/introduction-semantic-versioning/) (SemVer). Depending on what symbol you pass in, you can indicate which compiler version to use. See this [simple SemVer cheat sheet](https://devhints.io/semver).
+
+`>=0.6.0 <0.8.0;` indicates to use the compiler greater than 0.6.0 and less than 0.8.0. Specifying the minimum and maximum range of a language with which you tested the code is a good practice.
 
 #### Interface Overview
 
