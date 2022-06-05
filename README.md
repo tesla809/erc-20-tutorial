@@ -56,6 +56,8 @@ You can also message [@tesla809](https://twitter.com/Tesla809) on Twitter if you
 
 Once the context is established, it is suggested that you dig deeper into those concepts later. -->
 
+If you are curious, check out this [basic introduction to Ethereum](https://ethereum.org/en/developers/docs/intro-to-ethereum/).
+
 ### Note on Solidity
 
 Solidity is a programming scripting language to create smart contracts on Ethereum Virtual Machine (EVM) based blockchains. Ethereum was the first programmable blockchain that allows any arbitrary logic. Bitcoin has scripting capabilities, but it is severely limited.
@@ -350,9 +352,12 @@ Getters are functions that only read and return data from the smart contract on 
 function totalSupply() external view returns (uint256);
 ```
 
-`totalSupply` **returns the amount of tokens in existence**.
+`totalSupply()` **returns the amount of tokens in existence**.
 
-Again, this function is a getter and does not modify the state of the contract.
+This function is:
+
+- a getter
+- does not modify the state of the contract.
 
 Interestingly, Solidity does not have `floats`. `float` or floating-point numbers represent decimal numbers in other languages. This is similar to how `int` represents integers or `string` represents words. These are considered language 'primitives', building blocks of the language.
 
@@ -372,7 +377,16 @@ We see local currencies adopt two decimal subdivisions in everyday life, i.e., $
 function balanceOf(address account) external view returns (uint256);
 ```
 
-Returns the amount of tokens owned by an address (account). This function is a getter and does not modify the state of the contract.
+`balanceOf()` **returns the amount of tokens owned by an address (account).**
+
+This function is:
+
+- a getter
+- does not modify the state of the contract.
+
+What is an [`address`](https://docs.soliditylang.org/en/v0.8.14/types.html?highlight=address#address)? `address` represents [accounts](https://ethereum.org/en/developers/docs/accounts/) in Solidity, which you can think of as bank accounts. For the computer science-oriented, `address` can be regarded as memory locations in a computer.
+
+Accounts are what "hold" your digital assets. As we read before, contracts have a "ledger" via a key-value pair data structure called a `mapping`. The contract holds a record of which `address` holds how much of an asset. When the [wallet](https://ethereum.org/en/wallets/) reads the token contract, it appears as if the token is in the wallet.
 
 ##### allowance
 
@@ -387,7 +401,15 @@ Returns the amount of tokens owned by an address (account). This function is a g
 function allowance(address owner, address spender) external view returns (uint256);
 ```
 
-The ERC-20 standard allows an address to give an allowance to another address to be able to retrieve tokens from it. This getter returns the remaining number of tokens that the spender will be allowed to spend on behalf of owner. This function is a getter and does not modify the state of the contract and should return 0 by default.
+This function is:
+
+- a getter
+- does not modify the state of the contract
+- **should return 0 by default.**
+
+`allowance()` returns the amount which `spender` is still allowed to withdraw from `owner`. By default, this is zero.
+
+This value changes when `approve()` or `transferFrom()` are called. We will expand on the security implications of `approve()` below and during our custom ERC-20 implementation.
 
 #### Functions
 
@@ -428,7 +450,41 @@ Moves the amount of tokens from the function caller address (msg.sender) to the 
 function approve(address spender, uint256 amount) external returns (bool);
 ```
 
-Set the amount of allowance the spender is allowed to transfer from the function caller (msg.sender) balance. This function emits the Approval event. The function returns whether the allowance was successfully set.
+`approve()` sets the amount of allowance the spender is allowed to transfer from the function caller (msg.sender) balance. This function emits the `Approval` event. Finally, `approve()` returns whether the allowance was successfully sent.
+
+Why is this useful? Allowing another address to use your tokens opens the door for payments, escrow, and all sorts of financial transactions without having to approve. Through `approve()`, you give another on-chain entity the ability to use funds as they see fit.
+
+##### Unlimited permissions on approve() as a security flaw
+
+However, your Spidey senses may be tingling now.
+
+Basically, "Infinite approval means Infinite trust, something you shouldn't have in DeFi or any legal contract."
+
+Infinite approvals are akin to giving complete control over your account's assets to a third party. Convenient to get stuff done until things go wrong.
+
+The improper use of `approve()` opens the door for hacks and scammers. **In fact, this is a common way for hackers to trick users into stealing their funds.**
+
+How does this happen? Say a user wants to deposit 100 SAMPLEToken, an ERC-20 token, into another contract. The user can set `approve()` as the EXACT amount. However, what if the user plans to deposit funds again later? This would mean approving and spending funds to do so several times. Due to this friction, many apps instead request an unlimited allowance from the user. With unlimited allowance, the user only needs to approve once and on every future deposit.
+
+There are a few reasons to use unlimited permissions:
+
+- For better UX, since having to approve the exact spend limit for each contract can add friction
+- For cheaper fees, since the cost of interacting with the contract can rise based on network demand due to [gas fees](https://ethereum.org/en/developers/docs/gas/).
+
+Here is the gotcha moment. **By giving contracts unlimited permissions on `approve()`, you expose the risk of having all your tokens stolen.** This includes:
+
+- the deposited funds
+- AND the tokens held "safely" in your wallet.
+
+This can occur even in legitimate protocols that do not intend to scam their users. Hackers can leverage these permissions and combine them with exploits to drain the funds of legitimate projects, like what happened with [Bancor](https://medium.com/zengo/bancor-smart-contracts-vulnerability-and-its-lessons-ce762d09bb9a), [Furucombo via Rekt.news](https://rekt.news/furucombo-rekt/), [DeFi Saver](https://medium.com/defi-saver/disclosing-a-recently-discovered-exchange-vulnerability-fcd0b61edffe), [BadgerDAO](https://rekt.news/badger-rekt/) and other projects.
+
+Another way to scam users is by [airdropping scam tokens in their wallet](https://medium.com/mycrypto/bad-actors-abusing-erc20-approval-to-steal-your-tokens-c0407b7f7c7c). To accept the tokens users give unlimited permissions to the token. Then, the tokens that specific account are stolen.
+
+It is HIGHLY suggested to read the article ["Unlimited ERC20 allowances considered harmful" by Rosco Kalis](https://kalis.me/unlimited-erc20-allowances/) on the topic. The author outlines an excellent description of the problem, case studies of hacks, and possible solutions. Another great article with a great step-by-step visual breakdown of the issues can be found by [Blocksecteam](https://blocksecteam.medium.com/unlimited-approval-in-erc20-convenience-or-security-1c8dce421ed7). An [high-level description of unlimited permissions](https://coinmarketcap.com/alexandria/glossary/infinite-approval) can be found via Coinmarketcap.
+
+You can learn [how to revoke unlimited permissions via this article by Bankless](https://newsletter.banklesshq.com/p/how-to-protect-your-ethereum-wallet). Additionally, you can check and revoke token approvals via [EtherScan.io](https://etherscan.io/tokenapprovalchecker).
+
+There are safer ways to implement `approve()`. We will go in-depth into this during our Custom ERC-20 token implementation.
 
 ##### transferFrom
 
@@ -458,6 +514,10 @@ If you notice the [ERC-20 standard](https://eips.ethereum.org/EIPS/eip-20#method
 Let's cover these and provide some context.
 
 Please note that these following OPTIONAL methods can be used to improve usability, BUT interfaces and other contracts MUST NOT expect these values to be present.
+
+These optional methods can be found in OpenZeppelin's [ERC20Detailed](https://docs.openzeppelin.com/contracts/2.x/api/token/erc20#ERC20Detailed) contract.
+
+Later, we will discuss how to extend our ERC-20 implementation to include this optional contract using multiple inheritance.
 
 ##### name
 
@@ -516,6 +576,10 @@ npx create-react-app client
 ## Basic ERC-20
 
 For context, here is an [overview of an anatomy of a smart sontract](https://ethereum.org/en/developers/docs/smart-contracts/anatomy/).
+
+### approve() side quest
+
+Here is a [side quest](https://medium.com/@rodrigoherrerai/understanding-the-problem-of-erc20-unlimited-approval-from-first-principles-d2eaf6b4ea0e) to understand why unlimited permissions from approve are dangerous.
 
 ## ERC-20 Extensions
 
