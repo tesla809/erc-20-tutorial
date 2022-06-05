@@ -2,6 +2,42 @@
 
 A quick ERC-20 tutorial with testing, fuzzing and more.
 
+## Our Approach
+
+This tutorial will help you learn web3 with three principles in mind:
+
+- Learning by doing
+- Starting with blockchain first
+- Providing the big picture context for additional learning
+
+By focusing on project-based learning, you will have the proper context to understand new technical concepts. For motivation, it's also good to have an end goal in mind and goal posts along the journey.
+
+As you will see, web3 is an emergent technology, like a skills tree in an RPG game. Innovations and standards in one area unlock the door for new tech built upon it. For example, the ERC-20 standard allows for Decentralized Finance (DeFi) to be possible. The concepts introduced here will expand into other applications.
+
+## Concepts and Tech Covered
+
+### Concepts
+
+We will be covering the following concepts:
+
+- Developing an ERC-20 smart contract
+- Understanding what are smart contract standards
+- Understanding the smart contract development life cycle
+- Creating scripts to automate your work
+- Testing, fuzzing and security best practices in context of this project
+
+### Tech
+
+We'll be using the following tools:
+
+- Solidity
+- Truffle Suite
+- OpenZeppelin
+- Infura
+- React
+- JavaScript
+- Web3JS
+
 ## Prerequsites
 
 To complete this module, it is assumed that you know **at least the basics** of:
@@ -15,6 +51,10 @@ To complete this module, it is assumed that you know **at least the basics** of:
 For those new to programming, check out [ConsenSys Academy's Basic Training](https://consensys.net/blog/developers/introducing-basic-training-a-free-consensys-academy-course-for-software-engineering-fundamentals/), a free course to guide new developers. You can also join our [TBD - Truffle Unleashed Discord Channel]() to chat with other current and aspiring devs on your journey.
 
 You can also message [@tesla809](https://twitter.com/Tesla809) on Twitter if you have a programming question.
+
+<!-- However, if you don't know the basics, this tutorial will have sidenotes with links and explanations on this topic. They will be brief enough to let you understand the basics and get you to the next step.
+
+Once the context is established, it is suggested that you dig deeper into those concepts later. -->
 
 ### Note on Solidity
 
@@ -80,11 +120,11 @@ Events are used to issue alerts regarding actions that occured on the blockchain
 
 ### ERC-20 Standard Overview
 
-The ERC-20 standard defines a common list of rules that all fungible Ethereum tokens should adhere to. Without adherance, developers will find it hard for others to use their token, reducing its utility and possible network effects.
+The [ERC-20 standard](https://eips.ethereum.org/EIPS/eip-20) defines a common list of rules that all fungible Ethereum tokens should adhere to. Without adherance, developers will find it hard for others to use their token, reducing its utility and possible network effects.
 
-The purpose of the ERC-20 standard is to make any token implementation interoperable, reusable and composable across any application, like wallets, decentralized exchanges, lending markets and beyond. This common standard creates the building blocks for Decentralized Finance (DeFi).
+The purpose of the ERC-20 standard is to make any token implementation interoperable, reusable and composable across any application, like wallets, decentralized exchanges, lending markets and beyond. It provides the basic functionality to transfer tokens and allow tokens to be approved, so they can be spent by another on-chain third party. This common standard creates the building blocks for Decentralized Finance (DeFi).
 
-#### The ERC-20 API
+#### The Minumum ERC-20 API
 
 Below are all the required methods and events needed to implement the ERC-20 standard. Again, the ERC-20 standard is just a **common API for fungible assets**.
 
@@ -94,10 +134,12 @@ Let's go through each part of this code and cover:
 - NatSpec
 - pragma
 - interfaces
-- functions
 - events
+- functions
 
 Later, when we implement our first pass at the contract, we will cover the basics of Solidity's language primitives. This may be counter intuitive at first, but starting with the standard allows us to take a big picture hands-on view.
+
+Below is OpenZeppelin's implementation of the minimum required API for the ERC-20 Standard.
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -209,7 +251,7 @@ Later, we'll see how we import their contracts to provide a secure base for our 
 
 The multiline comments with symbols like `@dev` are part of Solidity's [NatSpec](https://docs.soliditylang.org/en/develop/natspec-format.html) format. NatSpec is used to produce documentation from the source code. JavaScript Developers may recognize its similarity to [JSDoc](https://jsdoc.app/about-getting-started.html). Using NatSpec to document your code is [considered a security best practice](https://ethereum.org/en/developers/tutorials/smart-contract-security-guidelines/#documentation-and-specifications).
 
-Natspec is useful for developers, 3rd party tooling, and end-users. For developers, it helps them and the future you understand your code. Custom annotations used by 3rd party tools can be added. NatSpec messages may even be shown to the end-user at the time that they will interact with the contract, like signing a transaction.
+NatSpec is useful for developers, 3rd party tooling, and end-users. For developers, it helps them and the future you understand your code. Custom annotations used by 3rd party tools can be added. NatSpec messages may even be shown to the end-user at the time that they will interact with the contract, like signing a transaction.
 
 There are other symbols like:
 
@@ -258,13 +300,176 @@ By convension, Interface contracts are in named in the form `ITokenStandard`, wi
 
 How are interfaces implemented? Like other programming languages, the implementation class (contract) will inherit from the interface class (contract). However, stay tuned.
 
-#### Getters
+#### Events
 
-#### Setters
+As mentioned before, [Events](https://www.youtube.com/watch?v=nopo9KwwRg4) are used to issue alerts regarding actions that occurred on the blockchain. Apps can subscribe to events to update their UI. Events can also be used for logging purposes. Event "emits" a message when an action on a function occurs.
+
+Event parameters can be `indexed`, with a maximum of 3 named parameter or 4 anonymous parameters. Indexing allow for
+
+A note on syntax. Don't get hung up on understanding each part immediately. We will get into the specifics later. For now, just understand the big picture and gist of the code.
+
+##### Transfer
+
+```solidity
+/**
+ * @dev Emitted when `value` tokens are moved from one account (`from`) to
+ * another (`to`).
+ *
+ * Note that `value` may be zero.
+ */
+
+event Transfer(address indexed from, address indexed to, uint256 value);
+```
+
+The `Transfer` event is emitted when the amount of tokens, `value`, is sent from the `from` address to the `to` address.
+
+##### Approval
+
+```solidity
+/**
+ * @dev Emitted when the allowance of a `spender` for an `owner` is set by
+ * a call to {approve}. `value` is the new allowance.
+ */
+
+event Approval(address indexed owner, address indexed spender, uint256 value);
+```
+
+This event is emitted when the amount of tokens (value) is approved by the owner to be used by the spender.
+
+#### Getter Functions
+
+Getters are functions that only read and return data from the smart contract on the Ethereum network. They DO NOT modify the state of the contract, i.e. updating or deleting information.
+
+##### totalSupply
+
+```solidity
+/**
+ * @dev Returns the amount of tokens in existence.
+ */
+
+function totalSupply() external view returns (uint256);
+```
+
+`totalSupply` **returns the amount of tokens in existence**.
+
+Again, this function is a getter and does not modify the state of the contract.
+
+Interestingly, Solidity does not have `floats`. `float` or floating-point numbers represent decimal numbers in other languages. This is similar to how `int` represents integers or `string` represents words. These are considered language 'primitives', building blocks of the language.
+
+So, how do we represent a fraction of a unit of value? An example is 0.5 US dollars (50 cents) or 0.5 ETH?
+
+Let's describe briefly, then go in-depth later during our custom ERC-20 contract implementation.
+
+We see local currencies adopt two decimal subdivisions in everyday life, i.e., $USD 1.50. In Ethereum, most tokens are even more subdivisible, and most adopt 18 decimals. As a result, most will return the `totalSupply` as `1000000000000000000` for `1 token`. However, this is not universal, and you should check when dealing with 3rd party tokens.
+
+##### balanceOf
+
+```solidity
+/**
+ * @dev Returns the amount of tokens owned by `account`.
+ */
+
+function balanceOf(address account) external view returns (uint256);
+```
+
+Returns the amount of tokens owned by an address (account). This function is a getter and does not modify the state of the contract.
+
+##### allowance
+
+```solidity
+/**
+ * @dev Returns the remaining number of tokens that `spender` will be
+ * allowed to spend on behalf of `owner` through {transferFrom}. This is
+ * zero by default.
+ *
+ * This value changes when {approve} or {transferFrom} are called.
+ */
+function allowance(address owner, address spender) external view returns (uint256);
+```
+
+The ERC-20 standard allows an address to give an allowance to another address to be able to retrieve tokens from it. This getter returns the remaining number of tokens that the spender will be allowed to spend on behalf of owner. This function is a getter and does not modify the state of the contract and should return 0 by default.
 
 #### Functions
 
-#### Events
+These functions update the state of the contract.
+
+##### transfer
+
+```solidity
+/**
+ * @dev Moves `amount` tokens from the caller's account to `to`.
+ *
+ * Returns a boolean value indicating whether the operation succeeded.
+ *
+ * Emits a {Transfer} event.
+ */
+function transfer(address to, uint256 amount) external returns (bool);
+```
+
+Moves the amount of tokens from the function caller address (msg.sender) to the recipient address. This function emits the Transfer event defined later. It returns true if the transfer was possible.
+
+##### approve
+
+```solidity
+/**
+ * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
+ *
+ * Returns a boolean value indicating whether the operation succeeded.
+ *
+ * IMPORTANT: Beware that changing an allowance with this method brings the risk
+ * that someone may use both the old and the new allowance by unfortunate
+ * transaction ordering. One possible solution to mitigate this race
+ * condition is to first reduce the spender's allowance to 0 and set the
+ * desired value afterwards:
+ * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+ *
+ * Emits an {Approval} event.
+ */
+function approve(address spender, uint256 amount) external returns (bool);
+```
+
+Set the amount of allowance the spender is allowed to transfer from the function caller (msg.sender) balance. This function emits the Approval event. The function returns whether the allowance was successfully set.
+
+##### transferFrom
+
+```solidity
+/**
+ * @dev Moves `amount` tokens from `from` to `to` using the
+ * allowance mechanism. `amount` is then deducted from the caller's
+ * allowance.
+ *
+ * Returns a boolean value indicating whether the operation succeeded.
+ *
+ * Emits a {Transfer} event.
+ */
+function transferFrom(
+    address from,
+    address to,
+    uint256 amount
+) external returns (bool);
+```
+
+Moves the amount of tokens from sender to recipient using the allowance mechanism. amount is then deducted from the caller’s allowance. This function emits the Transfer event.
+
+#### Optional ERC-20 Methods
+
+If you notice the [ERC-20 standard](https://eips.ethereum.org/EIPS/eip-20#methods) has optional methods.
+
+Let's cover these and provide some context.
+
+Please note that these following OPTIONAL methods can be used to improve usability, BUT interfaces and other contracts MUST NOT expect these values to be present.
+
+##### name
+
+`function name() public view returns (string)`
+
+##### symbol
+
+`function symbol() public view returns (string)`
+
+##### decimals
+
+`function decimals() public view returns (uint8)`
 
 ## Setup
 
@@ -311,3 +516,23 @@ npx create-react-app client
 ## Basic ERC-20
 
 For context, here is an [overview of an anatomy of a smart sontract](https://ethereum.org/en/developers/docs/smart-contracts/anatomy/).
+
+## ERC-20 Extensions
+
+### Minting and Burning Overview
+
+When minting new tokens, the transfer is usually from the 0x00..0000 address. When burning tokens the transfer is **to** 0x00..0000.
+
+#### ERC20Mintable
+
+#### ERC20Capped
+
+#### ERC20Burnable
+
+#### ERC20Pausable
+
+## ERC-20 Safety
+
+### Time Locks
+
+### SafeERC20
