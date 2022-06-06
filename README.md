@@ -128,6 +128,8 @@ The [ERC-20 standard](https://eips.ethereum.org/EIPS/eip-20) defines a common li
 
 The purpose of the ERC-20 standard is to make any token implementation interoperable, reusable and composable across any application, like wallets, decentralized exchanges, lending markets and beyond. It provides the basic functionality to transfer tokens and allow tokens to be approved, so they can be spent by another on-chain third party. This common standard creates the building blocks for Decentralized Finance (DeFi).
 
+EatTheBlock's video on [Ethereum Tokens: ERC20 Tutorial (transfer, transferFrom, approve...)](https://www.youtube.com/watch?v=o9Ux3xDrkIo) gives an contextual overview which can be used with this tutorial.
+
 #### The Minumum ERC-20 API
 
 Below are all the required methods and events needed to implement the ERC-20 standard. Again, the ERC-20 standard is just a **common API for fungible assets**.
@@ -366,8 +368,7 @@ This function is:
 
 - a getter
 - does not modify the state of the contract.
-
-Interestingly, Solidity does not have `floats`. `float` or floating-point numbers represent decimal numbers in other languages. This is similar to how `int` represents integers or `string` represents words. These are considered language 'primitives', building blocks of the language.
+- Interestingly, Solidity does not have `floats`. `float` or floating-point numbers represent decimal numbers in other languages. This is similar to how `int` represents integers or `string` represents words. These are considered language 'primitives', building blocks of the language.
 
 So, how do we represent a fraction of a unit of value? An example is 0.5 US dollars (50 cents) or 0.5 ETH?
 
@@ -423,6 +424,8 @@ This value changes when `approve()` or `transferFrom()` are called. We will expa
 
 The following functions update the state of the contract. This means they can change data inside the contract, so extra care needs to be added here.
 
+Note that OpenZeppelin Contracts functions will `revert` instead of returning false on failure. `revert` means the contract will undo all state changes, return a value, and refund any remaining gas to the caller.
+
 ##### transfer
 
 ```solidity
@@ -439,8 +442,10 @@ function transfer(address to, uint256 amount) external returns (bool);
 This function:
 
 - Modifies the state of the contract
+- `reverts` if failure occurs
+- returns `true` if transfer is possible
 
-Moves the amount of tokens from the function caller address (msg.sender) to the recipient address. This function emits the Transfer event defined later. It returns true if the transfer was possible.
+`transfer()` moves an `amount` of tokens from the function caller’s `address` to recipient's `address`. Then it emits the Transfer event defined later. It returns true if the transfer was possible.
 
 ##### approve
 
@@ -466,7 +471,7 @@ This function:
 
 - Modifies the state of the contract
 - Returns a boolean (true/false) value if sent
-- Note that Openzeppelin
+- `reverts` if failure occurs
 
 `approve()` sets the amount of allowance the spender is allowed to transfer from the function caller (msg.sender) balance. This function emits the `Approval` event. Finally, `approve()` returns whether the allowance was successfully sent.
 
@@ -533,7 +538,23 @@ function transferFrom(
 ) external returns (bool);
 ```
 
-Moves the amount of tokens from sender to recipient using the allowance mechanism. amount is then deducted from the caller’s allowance. This function emits the Transfer event.
+This function:
+
+- Modifies the state of the contract
+- Returns a boolean (true/false) value if sent
+- `reverts` if failure occurs
+
+`transferFrom()` moves the amount of tokens from sender to recipient using the `allowance` mechanism. Then `amount` deducted from the caller’s allowance. This function emits the Transfer event.
+
+##### Multiple transferFrom() calls as a security flaw
+
+OpenZeppelin's [ERC-20 documentation](https://docs.openzeppelin.com/contracts/2.x/api/token/erc20#IERC20-approve-address-uint256-) mentions the risk of someone using both the old and the new allowance by [unfortunate transaction ordering](https://ethereum-contract-security-techniques-and-tips.readthedocs.io/en/latest/known_attacks/#transaction-ordering-dependence-tod-front-running).
+
+- N: old transaction approving N tokens
+- M: new transaction approving M tokens
+- N + M: transaction approving N + M tokens.
+
+We will discuss how to deal with this issue during our implementation. For the curious, a great breakdown can be found in the write up by ["ERC20 API: An Attack Vector on the Approve/TransferFrom Methods" by Mikhail Vladimirov and Dmitry Khovratovich](https://docs.google.com/document/d/1YLPtQxZu1UAvO9cZ1O2RPXBbT0mooh4DYKjA_jp-RLM/edit#).
 
 #### Optional ERC-20 Methods
 
@@ -541,7 +562,7 @@ If you notice the [ERC-20 standard](https://eips.ethereum.org/EIPS/eip-20#method
 
 Let's cover these and provide some context.
 
-Please note that these following OPTIONAL methods can be used to improve usability, BUT interfaces and other contracts MUST NOT expect these values to be present.
+Please note that these following OPTIONAL Getter methods can be used to improve usability, BUT interfaces and other contracts MUST NOT expect these values to be present.
 
 These optional methods can be found in OpenZeppelin's [ERC20Detailed](https://docs.openzeppelin.com/contracts/2.x/api/token/erc20#ERC20Detailed) contract.
 
@@ -551,13 +572,65 @@ Later, we will discuss how to extend our ERC-20 implementation to include this o
 
 `function name() public view returns (string)`
 
+This function:
+
+- is a optional getter method
+- Returns the name of the token - e.g. "MyToken".
+
+`symbol()` returns the token ticker, which is used by wallets and other applications to display the token.
+
 ##### symbol
 
 `function symbol() public view returns (string)`
 
+This function:
+
+- is a optional getter method
+- Returns the symbol of the token. E.g. “HIX”.
+
+`name()` returns the token ticker, which is used by wallets and other applications to display the token.
+
 ##### decimals
 
 `function decimals() public view returns (uint8)`
+
+This function:
+
+- is an optional getter method
+- Returns the granularity the token can be divided into via the number of decimals the token uses.
+
+Returns the token's granularity, i.e., how small it can be divided into, via the number of decimals the token uses.
+
+Recall that Solidity does not have `float` for decimals. So how could we deal with fractional portions of tokens like 0.5 SAMPLEToken?
+
+There is a simple solution: All math is done by using large numbers which represent smaller numbers. Most tokens use the same granularity as Ether, with the smallest denomination being 10\*\*-18 or 18 places after the decimal (0.000000000000000001). In Ethereum, the smallest denomination is called a wei.
+
+Note: In Solidity, the operator for exponents is \*\*.
+
+The breakdown of the logical:
+1 wei = 0.000000000000000001 ETH
+10 wei = 0.000000000000000010 ETH
+100 wei = 0.00000000000000100 ETH
+1000 wei = 0.00000000000001000 ETH
+...
+1000000000000000000 wei = 1.000000000000000000 = 1 ETH
+
+If we follow the same logic:
+1 = 0.000000000000000001 SAMPLEToken
+10 = 0.000000000000000010 SAMPLEToken
+100 = 0.00000000000000100 SAMPLEToken
+1000 = 0.00000000000001000 SAMPLEToken
+...
+1000000000000000000 = 1.000000000000000000 = 1 SAMPLEToken
+
+Logically, to represent 0.5 SAMPLEToken our number will be:
+0.5 SAMPLEToken = 500000000000000000
+
+OpenZeppelin's [ERC-20 implementation](https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#ERC20-decimals--) makes this easy by providing a `decimal` variable to hold our decimal's granularity. This is used to help with the code's presentation to applications like wallets for end users to understand. The variable DOES NOT affect the integer arithmetic.
+
+We will cover this deeper in our implementation.
+
+EatTheBlocks' [ERC-20 video](https://youtu.be/o9Ux3xDrkIo?t=205) describes `decimals()` in depth. Additionally, OpenZeppelin's [ERC-20 overview](https://docs.openzeppelin.com/contracts/4.x/erc20#a-note-on-decimals) explains how this works. We will go indepth on how to apply this during our implementation phase.
 
 ## Setup
 
