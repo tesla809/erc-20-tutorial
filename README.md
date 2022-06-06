@@ -517,6 +517,8 @@ You can learn [how to revoke unlimited permissions via this article by Bankless]
 
 There are things we can do to mitigate this. First, there are safer ways to implement `approve()`. We will go in-depth into this during our Custom ERC-20 token implementation and discuss [EIP-712](https://eips.ethereum.org/EIPS/eip-712) and [EIP-2612](https://eips.ethereum.org/EIPS/eip-2612). Additionally, we can do things on the front end to alert the user, which we will cover in our front section.
 
+Finally OpenZeppelin has added two non-standard methods in their ERC-20 implementation to deal with this issue: [`increaseAllowance()`](https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#ERC20-increaseAllowance-address-uint256-) and `decreaseAllowance(https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#ERC20-decreaseAllowance-address-uint256-)`
+
 For now, let's continue with understanding ERC-20s.
 
 ##### transferFrom
@@ -558,15 +560,11 @@ We will discuss how to deal with this issue during our implementation. For the c
 
 #### Optional ERC-20 Methods
 
-If you notice the [ERC-20 standard](https://eips.ethereum.org/EIPS/eip-20#methods) has optional methods.
+If you notice the [ERC-20 standard](https://eips.ethereum.org/EIPS/eip-20#methods) has optional methods. These optional methods can be found in OpenZeppelin's [IERC20Metadata](https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#IERC20Metadata) contract.
 
-Let's cover these and provide some context.
+Let's cover these and provide some context. Later, we will discuss how to extend our ERC-20 implementation to include this optional contract using multiple inheritance.
 
 Please note that these following OPTIONAL Getter methods can be used to improve usability, BUT interfaces and other contracts MUST NOT expect these values to be present.
-
-These optional methods can be found in OpenZeppelin's [ERC20Detailed](https://docs.openzeppelin.com/contracts/2.x/api/token/erc20#ERC20Detailed) contract.
-
-Later, we will discuss how to extend our ERC-20 implementation to include this optional contract using multiple inheritance.
 
 ##### name
 
@@ -598,12 +596,13 @@ This function:
 
 - is an optional getter method
 - Returns the granularity the token can be divided into via the number of decimals the token uses.
+- By default, the Openzeppelin implementation returns 18, unless otherwise updated.
 
 Returns the token's granularity, i.e., how small it can be divided into, via the number of decimals the token uses.
 
 Recall that Solidity does not have `float` for decimals. So how could we deal with fractional portions of tokens like 0.5 SAMPLEToken?
 
-There is a simple solution: All math is done by using large numbers which represent smaller numbers. Most tokens use the same granularity as Ether, with the smallest denomination being 10\*\*-18 or 18 places after the decimal (0.000000000000000001). In Ethereum, the smallest denomination is called a wei.
+There is a simple solution: All math is done by using large numbers which represent smaller numbers. Most tokens use the same granularity as Ether, with the smallest denomination being 10\*\*-18 or 18 places after the decimal (0.000000000000000001). In Ethereum, the smallest denomination is called a [wei](https://www.youtube.com/watch?v=cjgVP0DBWNU). You can change play with these units [here](https://etherchain.org/tools/unitConverter).
 
 Note: In Solidity, the operator for exponents is \*\*.
 
