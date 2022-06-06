@@ -80,6 +80,8 @@ Tokens can represent anything, like time, money, services, virtual pets, stock, 
 
 Under the hood, a token is just a smart contract. In fact, most things built on Ethereum are smart contracts, which are programmable snippets of code that run on the Ethereum blockchain.
 
+Basically, a token contract is some code that maps addresses to balances with additional methods to alter those balances.
+
 #### Contracts
 
 [Contracts](https://docs.soliditylang.org/en/v0.8.13/contracts.html) work just like classes in other programming languages. According to the [official Solidity documentation](https://docs.soliditylang.org/en/v0.8.13/introduction-to-smart-contracts.html), a contract is "a collection of code (its functions) and data (its state) that resides at a specific address on the Ethereum blockchain."
@@ -304,11 +306,17 @@ How are interfaces implemented? Like other programming languages, the implementa
 
 #### Events
 
-As mentioned before, [Events](https://www.youtube.com/watch?v=nopo9KwwRg4) are used to issue alerts regarding actions that occurred on the blockchain. Apps can subscribe to events to update their UI. Events can also be used for logging purposes. Event "emits" a message when an action on a function occurs.
+As mentioned before, [Events](https://www.thirdandgrove.com/insights/ethereum-part-iv-contract-events-and-logs/#:~:text=An%20event%20allows%20a%20contract,data%20about%20the%20state%20change.) are used to issue alerts regarding actions that occurred on the blockchain. Apps can subscribe to events to update their UI. Events can also be used for logging purposes. Event "emits" a message when an action on a function occurs.
 
-Event parameters can be `indexed`, with a maximum of 3 named parameter or 4 anonymous parameters. Indexing allow for
+A deeper dive into [Events can be found in this video](<[Events](https://www.youtube.com/watch?v=nopo9KwwRg4)>).
 
-A note on syntax. Don't get hung up on understanding each part immediately. We will get into the specifics later. For now, just understand the big picture and gist of the code.
+Note three things:
+
+- Event start with a captial lettter
+- Event don't modify the smart contract's state related to account. However, they DO modify the blockchain as described Solidity Language [forum](https://ethereum.stackexchange.com/questions/127152/events-can-cause-state-change) and [in this StackOverflow post](https://ethereum.stackexchange.com/questions/127152/events-can-cause-state-change).
+- A good and practical description of Events can be found in the introduction of [Understanding event logs on the Ethereum blockchain by Luit Hollander](https://medium.com/mycrypto/understanding-event-logs-on-the-ethereum-blockchain-f4ae7ba50378).
+
+An additional note on syntax. Don't get hung up on understanding each part immediately. We will get into the specifics later during our implementation. For now, just understand the big picture and gist of the code.
 
 ##### Transfer
 
@@ -379,9 +387,9 @@ function balanceOf(address account) external view returns (uint256);
 
 `balanceOf()` **returns the amount of tokens owned by an address (account).**
 
-This function is:
+This function:
 
-- a getter
+- is a getter
 - does not modify the state of the contract.
 
 What is an [`address`](https://docs.soliditylang.org/en/v0.8.14/types.html?highlight=address#address)? `address` represents [accounts](https://ethereum.org/en/developers/docs/accounts/) in Solidity, which you can think of as bank accounts. For the computer science-oriented, `address` can be regarded as memory locations in a computer.
@@ -401,9 +409,9 @@ Accounts are what "hold" your digital assets. As we read before, contracts have 
 function allowance(address owner, address spender) external view returns (uint256);
 ```
 
-This function is:
+This function:
 
-- a getter
+- is a getter
 - does not modify the state of the contract
 - **should return 0 by default.**
 
@@ -413,7 +421,7 @@ This value changes when `approve()` or `transferFrom()` are called. We will expa
 
 #### Functions
 
-These functions update the state of the contract.
+The following functions update the state of the contract. This means they can change data inside the contract, so extra care needs to be added here.
 
 ##### transfer
 
@@ -427,6 +435,10 @@ These functions update the state of the contract.
  */
 function transfer(address to, uint256 amount) external returns (bool);
 ```
+
+This function:
+
+- Modifies the state of the contract
 
 Moves the amount of tokens from the function caller address (msg.sender) to the recipient address. This function emits the Transfer event defined later. It returns true if the transfer was possible.
 
@@ -450,6 +462,12 @@ Moves the amount of tokens from the function caller address (msg.sender) to the 
 function approve(address spender, uint256 amount) external returns (bool);
 ```
 
+This function:
+
+- Modifies the state of the contract
+- Returns a boolean (true/false) value if sent
+- Note that Openzeppelin
+
 `approve()` sets the amount of allowance the spender is allowed to transfer from the function caller (msg.sender) balance. This function emits the `Approval` event. Finally, `approve()` returns whether the allowance was successfully sent.
 
 Why is this useful? Allowing another address to use your tokens opens the door for payments, escrow, and all sorts of financial transactions without having to approve. Through `approve()`, you give another on-chain entity the ability to use funds as they see fit.
@@ -462,21 +480,29 @@ Basically, "Infinite approval means Infinite trust, something you shouldn't have
 
 Infinite approvals are akin to giving complete control over your account's assets to a third party. Convenient to get stuff done until things go wrong.
 
+[Here is a video by Paul Razvan Berg at DevCon V briefly describing the problem](https://youtu.be/y9A8wHhNjJA)
+
 The improper use of `approve()` opens the door for hacks and scammers. **In fact, this is a common way for hackers to trick users into stealing their funds.**
 
 How does this happen? Say a user wants to deposit 100 SAMPLEToken, an ERC-20 token, into another contract. The user can set `approve()` as the EXACT amount. However, what if the user plans to deposit funds again later? This would mean approving and spending funds to do so several times. Due to this friction, many apps instead request an unlimited allowance from the user. With unlimited allowance, the user only needs to approve once and on every future deposit.
 
-There are a few reasons to use unlimited permissions:
+The root motivation of "unlimited approval" are:
 
-- For better UX, since having to approve the exact spend limit for each contract can add friction
-- For cheaper fees, since the cost of interacting with the contract can rise based on network demand due to [gas fees](https://ethereum.org/en/developers/docs/gas/).
+- less friction, since two transactions are required for both `approve()` and `transferFrom()`.
+- for cheaper fees, since the cost of interacting with the contract can rise based on network demand due to [gas fees](https://ethereum.org/en/developers/docs/gas/).
+- better UX, since asking approval occurs only once, thus being unlimited.
 
 Here is the gotcha moment. **By giving contracts unlimited permissions on `approve()`, you expose the risk of having all your tokens stolen.** This includes:
 
 - the deposited funds
 - AND the tokens held "safely" in your wallet.
 
-This can occur even in legitimate protocols that do not intend to scam their users. Hackers can leverage these permissions and combine them with exploits to drain the funds of legitimate projects, like what happened with [Bancor](https://medium.com/zengo/bancor-smart-contracts-vulnerability-and-its-lessons-ce762d09bb9a), [Furucombo via Rekt.news](https://rekt.news/furucombo-rekt/), [DeFi Saver](https://medium.com/defi-saver/disclosing-a-recently-discovered-exchange-vulnerability-fcd0b61edffe), [BadgerDAO](https://rekt.news/badger-rekt/) and other projects.
+Note that you are still vulnerable to these types of smart contract exploits even if your:
+
+- your secret recovery phrase (seed phrase) is not shared
+- private keys are secured in a hardware wallet
+
+This exploit can occur even in legitimate protocols that do not intend to scam their users. Hackers can leverage unlimited permissions and combine them with exploits to drain the funds of legitimate projects, like what happened with [Bancor](https://medium.com/zengo/bancor-smart-contracts-vulnerability-and-its-lessons-ce762d09bb9a), [Furucombo via Rekt.news](https://rekt.news/furucombo-rekt/), [DeFi Saver](https://medium.com/defi-saver/disclosing-a-recently-discovered-exchange-vulnerability-fcd0b61edffe), [BadgerDAO](https://rekt.news/badger-rekt/) and other projects.
 
 Another way to scam users is by [airdropping scam tokens in their wallet](https://medium.com/mycrypto/bad-actors-abusing-erc20-approval-to-steal-your-tokens-c0407b7f7c7c). To accept the tokens users give unlimited permissions to the token. Then, the tokens that specific account are stolen.
 
@@ -484,7 +510,9 @@ It is HIGHLY suggested to read the article ["Unlimited ERC20 allowances consider
 
 You can learn [how to revoke unlimited permissions via this article by Bankless](https://newsletter.banklesshq.com/p/how-to-protect-your-ethereum-wallet). Additionally, you can check and revoke token approvals via [EtherScan.io](https://etherscan.io/tokenapprovalchecker).
 
-There are safer ways to implement `approve()`. We will go in-depth into this during our Custom ERC-20 token implementation.
+There are things we can do to mitigate this. First, there are safer ways to implement `approve()`. We will go in-depth into this during our Custom ERC-20 token implementation and discuss [EIP-712](https://eips.ethereum.org/EIPS/eip-712) and [EIP-2612](https://eips.ethereum.org/EIPS/eip-2612). Additionally, we can do things on the front end to alert the user, which we will cover in our front section.
+
+For now, let's continue with understanding ERC-20s.
 
 ##### transferFrom
 
