@@ -517,7 +517,7 @@ You can learn [how to revoke unlimited permissions via this article by Bankless]
 
 There are things we can do to mitigate this. First, there are safer ways to implement `approve()`. We will go in-depth into this during our Custom ERC-20 token implementation and discuss [EIP-712](https://eips.ethereum.org/EIPS/eip-712) and [EIP-2612](https://eips.ethereum.org/EIPS/eip-2612). Additionally, we can do things on the front end to alert the user, which we will cover in our front section.
 
-Finally OpenZeppelin has added two non-standard methods in their ERC-20 implementation to deal with this issue: [`increaseAllowance()`](https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#ERC20-increaseAllowance-address-uint256-) and `decreaseAllowance(https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#ERC20-decreaseAllowance-address-uint256-)`
+Finally OpenZeppelin has added two non-standard methods in their ERC-20 implementation to deal with this issue: [`increaseAllowance()`](https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#ERC20-increaseAllowance-address-uint256-) and [`decreaseAllowance()`](https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#ERC20-decreaseAllowance-address-uint256-)
 
 For now, let's continue with understanding ERC-20s.
 
@@ -607,22 +607,22 @@ There is a simple solution: All math is done by using large numbers which repres
 Note: In Solidity, the operator for exponents is \*\*.
 
 The breakdown of the logical:
-1 wei = 0.000000000000000001 ETH
-10 wei = 0.000000000000000010 ETH
-100 wei = 0.00000000000000100 ETH
-1000 wei = 0.00000000000001000 ETH
-...
+1 wei = 0.000000000000000001 ETH  
+10 wei = 0.000000000000000010 ETH  
+100 wei = 0.00000000000000100 ETH  
+1000 wei = 0.00000000000001000 ETH  
+...  
 1000000000000000000 wei = 1.000000000000000000 = 1 ETH
 
-If we follow the same logic:
-1 = 0.000000000000000001 SAMPLEToken
-10 = 0.000000000000000010 SAMPLEToken
-100 = 0.00000000000000100 SAMPLEToken
-1000 = 0.00000000000001000 SAMPLEToken
-...
+If we follow the same logic:  
+1 = 0.000000000000000001 SAMPLEToken  
+10 = 0.000000000000000010 SAMPLEToken  
+100 = 0.00000000000000100 SAMPLEToken  
+1000 = 0.00000000000001000 SAMPLEToken  
+...  
 1000000000000000000 = 1.000000000000000000 = 1 SAMPLEToken
 
-Logically, to represent 0.5 SAMPLEToken our number will be:
+Logically, to represent 0.5 SAMPLEToken our number will be:  
 0.5 SAMPLEToken = 500000000000000000
 
 OpenZeppelin's [ERC-20 implementation](https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#ERC20-decimals--) makes this easy by providing a `decimal` variable to hold our decimal's granularity. This is used to help with the code's presentation to applications like wallets for end users to understand. The variable DOES NOT affect the integer arithmetic.
