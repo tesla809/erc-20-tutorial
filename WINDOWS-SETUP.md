@@ -54,14 +54,26 @@ Now let's combine the power of VS Code and Bash. As mentioned before, Windows us
 
 If there is no error, it works!
 
-## Understanding the command line
+## Understanding the Command Line
 
 You will quickly grow accustomed to the command line the more you use it. Anecdotally, 95% of the time, you will only use anywhere from 5-to 10 commands. Refer to this [command line cheat sheet](https://www.git-tower.com/blog/command-line-cheat-sheet/). The most frequent commands will be around navigation and file manipulation. That's mostly it! If you want additional practice with the command line, you can check out this free [command line course by Codecademy](https://www.codecademy.com/learn/learn-the-command-line).
 
+## Set up Github
+
+Now its time to set up your Github account. Github is a platform for social coding, allowing open source projects to flourish. To setup your account follow these [instructions](https://docs.github.com/en/get-started/quickstart/set-up-git).
+
+## Fork the Repository
+
+To fork a repository, [follow these instructions](https://docs.github.com/en/get-started/quickstart/fork-a-repo).
+
+## Clone a repository
+
+To clone a repo, [follow these instructions](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
+
+## Open project in VS code
+
+Drag and drop the project into the VS Code. Avoid adding it into the terminal, since it will result in the projects PATH and not the files.
+
+Enjoy!
+
 [start .](https://stackoverflow.com/questions/40879648/how-to-open-the-current-directory-on-bash-on-windows)
-
-[Overview: Setup your github](https://docs.github.com/en/get-started/quickstart/set-up-git)
-
-[set up your username in git](https://docs.github.com/en/get-started/getting-started-with-git/setting-your-username-in-git)
-
-[set up your email in git](https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-email-preferences/setting-your-commit-email-address)
