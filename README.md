@@ -239,13 +239,6 @@ Programming languages have the abilty to allow developers to leave comments. Sol
 - `//` single line comments
 - `/* */` multi line comments
 
-#### SPDX
-
-Solidity files should have a license identifier. Software licenses are essential because, depending on the type, they can provide different limitations, liability protection, or requirements for usage. Usually, smart contracts use the [MIT License](https://choosealicense.com/licenses/mit/), which limits personal liability while giving users expansive freedoms.
-
-If you need a different license, explain it in the comments. In addition, you can find a [developer's guide to licenses here](https://github.com/readme/guides/open-source-licensing) and, for the more curious, the entire [list of SPDX licenses here](https://spdx.org/licenses/). Reasons for choosing a different license range from business considerations to wishing to retain all derivative code as open-source even if a business builds on top of it.
-
-[SPDX](https://spdx.dev/) is an open standard for communicating software licenses, copywrites, security references, etc.
 
 #### OpenZeppelin Reference
 
@@ -288,8 +281,6 @@ Like all programming languages, Solidity has updates. The `pragma` states which 
 #### Interface Overview
 
 Think of interfaces like a light switch. Light switches can come in different styles and operate in different ways. However, your only concern is that the lights can be turned on or off. You can think of the light switch as an interface or API for an action, toggling between lights on or off.
-
-In Object-Oriented Programming, [interfaces](<https://en.wikipedia.org/wiki/Interface_(computing)#In_object-oriented_languages>) are popular patterns as well. They split a piece of code's expected functionality from its implementation. Or simply put, interfaces separate the definition of a function from the actual behavior of the said function. As a result, they can help create the APIs that form our token standards.
 
 In Solidity specifically, an Interface is a smart contract that lists a series of functions and events without implementation. Interface contracts do not focus on HOW a contract can do something, only WHAT they can do. Think of smart contract interfaces as a skeleton or backbone. It defines the contract's functionalities and how to trigger them. But not HOW it occurs. HOW the function is implemented is customizable and up to the developer.
 
@@ -477,49 +468,6 @@ This function:
 
 Why is this useful? Allowing another address to use your tokens opens the door for payments, escrow, and all sorts of financial transactions without having to approve. Through `approve()`, you give another on-chain entity the ability to use funds as they see fit.
 
-##### Unlimited permissions on approve() as a security flaw
-
-However, your Spidey senses may be tingling now.
-
-Basically, "Infinite approval means Infinite trust, something you shouldn't have in DeFi or any legal contract."
-
-Infinite approvals are akin to giving complete control over your account's assets to a third party. Convenient to get stuff done until things go wrong.
-
-[Here is a video by Paul Razvan Berg at DevCon V briefly describing the problem](https://youtu.be/y9A8wHhNjJA)
-
-The improper use of `approve()` opens the door for hacks and scammers. **In fact, this is a common way for hackers to trick users into stealing their funds.**
-
-How does this happen? Say a user wants to deposit 100 SAMPLEToken, an ERC-20 token, into another contract. The user can set `approve()` as the EXACT amount. However, what if the user plans to deposit funds again later? This would mean approving and spending funds to do so several times. Due to this friction, many apps instead request an unlimited allowance from the user. With unlimited allowance, the user only needs to approve once and on every future deposit.
-
-The root motivation of "unlimited approval" are:
-
-- less friction, since two transactions are required for both `approve()` and `transferFrom()`.
-- for cheaper fees, since the cost of interacting with the contract can rise based on network demand due to [gas fees](https://ethereum.org/en/developers/docs/gas/).
-- better UX, since asking approval occurs only once, thus being unlimited.
-
-Here is the gotcha moment. **By giving contracts unlimited permissions on `approve()`, you expose the risk of having all your tokens stolen.** This includes:
-
-- the deposited funds
-- AND the tokens held "safely" in your wallet.
-
-Note that you are still vulnerable to these types of smart contract exploits even if your:
-
-- your secret recovery phrase (seed phrase) is not shared
-- private keys are secured in a hardware wallet
-
-This exploit can occur even in legitimate protocols that do not intend to scam their users. Hackers can leverage unlimited permissions and combine them with exploits to drain the funds of legitimate projects, like what happened with [Bancor](https://medium.com/zengo/bancor-smart-contracts-vulnerability-and-its-lessons-ce762d09bb9a), [Furucombo via Rekt.news](https://rekt.news/furucombo-rekt/), [DeFi Saver](https://medium.com/defi-saver/disclosing-a-recently-discovered-exchange-vulnerability-fcd0b61edffe), [BadgerDAO](https://rekt.news/badger-rekt/) and other projects.
-
-Another way to scam users is by [airdropping scam tokens in their wallet](https://medium.com/mycrypto/bad-actors-abusing-erc20-approval-to-steal-your-tokens-c0407b7f7c7c). To accept the tokens users give unlimited permissions to the token. Then, the tokens that specific account are stolen.
-
-It is HIGHLY suggested to read the article ["Unlimited ERC20 allowances considered harmful" by Rosco Kalis](https://kalis.me/unlimited-erc20-allowances/) on the topic. The author outlines an excellent description of the problem, case studies of hacks, and possible solutions. Another great article with a great step-by-step visual breakdown of the issues can be found by [Blocksecteam](https://blocksecteam.medium.com/unlimited-approval-in-erc20-convenience-or-security-1c8dce421ed7). An [high-level description of unlimited permissions](https://coinmarketcap.com/alexandria/glossary/infinite-approval) can be found via Coinmarketcap.
-
-You can learn [how to revoke unlimited permissions via this article by Bankless](https://newsletter.banklesshq.com/p/how-to-protect-your-ethereum-wallet). Additionally, you can check and revoke token approvals via [EtherScan.io](https://etherscan.io/tokenapprovalchecker).
-
-There are things we can do to mitigate this. First, there are safer ways to implement `approve()`. We will go in-depth into this during our Custom ERC-20 token implementation and discuss [EIP-712](https://eips.ethereum.org/EIPS/eip-712) and [EIP-2612](https://eips.ethereum.org/EIPS/eip-2612). Additionally, we can do things on the front end to alert the user, which we will cover in our front section.
-
-Finally OpenZeppelin has added two non-standard methods in their ERC-20 implementation to deal with this issue: [`increaseAllowance()`](https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#ERC20-increaseAllowance-address-uint256-) and [`decreaseAllowance()`](https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#ERC20-decreaseAllowance-address-uint256-)
-
-For now, let's continue with understanding ERC-20s.
 
 ##### transferFrom
 
@@ -547,89 +495,6 @@ This function:
 - `reverts` if failure occurs
 
 `transferFrom()` moves the amount of tokens from sender to recipient using the `allowance` mechanism. Then `amount` deducted from the caller’s allowance. This function emits the Transfer event.
-
-##### Multiple transferFrom() calls as a security flaw
-
-OpenZeppelin's [ERC-20 documentation](https://docs.openzeppelin.com/contracts/2.x/api/token/erc20#IERC20-approve-address-uint256-) mentions the risk of someone using both the old and the new allowance by [unfortunate transaction ordering](https://ethereum-contract-security-techniques-and-tips.readthedocs.io/en/latest/known_attacks/#transaction-ordering-dependence-tod-front-running).
-
-- N: old transaction approving N tokens
-- M: new transaction approving M tokens
-- N + M: transaction approving N + M tokens.
-
-We will discuss how to deal with this issue during our implementation. For the curious, a great breakdown can be found in the write up by ["ERC20 API: An Attack Vector on the Approve/TransferFrom Methods" by Mikhail Vladimirov and Dmitry Khovratovich](https://docs.google.com/document/d/1YLPtQxZu1UAvO9cZ1O2RPXBbT0mooh4DYKjA_jp-RLM/edit#).
-
-#### Optional ERC-20 Methods
-
-If you notice the [ERC-20 standard](https://eips.ethereum.org/EIPS/eip-20#methods) has optional methods. These optional methods can be found in OpenZeppelin's [IERC20Metadata](https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#IERC20Metadata) contract.
-
-Let's cover these and provide some context. Later, we will discuss how to extend our ERC-20 implementation to include this optional contract using multiple inheritance.
-
-Please note that these following OPTIONAL Getter methods can be used to improve usability, BUT interfaces and other contracts MUST NOT expect these values to be present.
-
-##### name
-
-`function name() public view returns (string)`
-
-This function:
-
-- is a optional getter method
-- Returns the name of the token - e.g. "MyToken".
-
-`symbol()` returns the token ticker, which is used by wallets and other applications to display the token.
-
-##### symbol
-
-`function symbol() public view returns (string)`
-
-This function:
-
-- is a optional getter method
-- Returns the symbol of the token. E.g. “HIX”.
-
-`name()` returns the token ticker, which is used by wallets and other applications to display the token.
-
-##### decimals
-
-`function decimals() public view returns (uint8)`
-
-This function:
-
-- is an optional getter method
-- Returns the granularity the token can be divided into via the number of decimals the token uses.
-- By default, the Openzeppelin implementation returns 18, unless otherwise updated.
-
-Returns the token's granularity, i.e., how small it can be divided into, via the number of decimals the token uses.
-
-Recall that Solidity does not have `float` for decimals. So how could we deal with fractional portions of tokens like 0.5 SAMPLEToken?
-
-There is a simple solution: All math is done by using large numbers which represent smaller numbers. Most tokens use the same granularity as Ether, with the smallest denomination being 10\*\*-18 or 18 places after the decimal (0.000000000000000001). In Ethereum, the smallest denomination is called a [wei](https://www.youtube.com/watch?v=cjgVP0DBWNU). You can change play with these units [here](https://etherchain.org/tools/unitConverter).
-
-Note: In Solidity, the operator for exponents is \*\*.
-
-The breakdown of the logical:
-1 wei = 0.000000000000000001 ETH  
-10 wei = 0.000000000000000010 ETH  
-100 wei = 0.00000000000000100 ETH  
-1000 wei = 0.00000000000001000 ETH  
-...  
-1000000000000000000 wei = 1.000000000000000000 = 1 ETH
-
-If we follow the same logic:  
-1 = 0.000000000000000001 SAMPLEToken  
-10 = 0.000000000000000010 SAMPLEToken  
-100 = 0.00000000000000100 SAMPLEToken  
-1000 = 0.00000000000001000 SAMPLEToken  
-...  
-1000000000000000000 = 1.000000000000000000 = 1 SAMPLEToken
-
-Logically, to represent 0.5 SAMPLEToken our number will be:  
-0.5 SAMPLEToken = 500000000000000000
-
-OpenZeppelin's [ERC-20 implementation](https://docs.openzeppelin.com/contracts/4.x/api/token/erc20#ERC20-decimals--) makes this easy by providing a `decimal` variable to hold our decimal's granularity. This is used to help with the code's presentation to applications like wallets for end users to understand. The variable DOES NOT affect the integer arithmetic.
-
-We will cover this deeper in our implementation.
-
-EatTheBlocks' [ERC-20 video](https://youtu.be/o9Ux3xDrkIo?t=205) describes `decimals()` in depth. Additionally, OpenZeppelin's [ERC-20 overview](https://docs.openzeppelin.com/contracts/4.x/erc20#a-note-on-decimals) explains how this works. We will go indepth on how to apply this during our implementation phase.
 
 ## Setup
 
@@ -700,3 +565,4 @@ When minting new tokens, the transfer is usually from the 0x00..0000 address. Wh
 ### Time Locks
 
 ### SafeERC20
+
